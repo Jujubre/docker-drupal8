@@ -22,6 +22,10 @@ RUN echo "\ndaemon off;" >> /etc/nginx/nginx.conf
 RUN rm -f /etc/nginx/sites-enabled/*
 ADD sites-enabled/* /etc/nginx/sites-enabled/
 
+### configure ssh login
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server
+
+
 #### Install mariadb
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
 RUN \
@@ -43,14 +47,6 @@ RUN \
         php5-gd \
         php5-xdebug
 
-
-#### Install and configure postfix for sending of emails
-RUN \
-    DEBIAN_FRONTEND=noninteractive  \
-    echo "postfix postfix/mailname string example.com" | debconf-set-selections && \
-    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
-    apt-get install -y postfix
-
 #### drush
 # Install composer
 RUN \
@@ -62,13 +58,6 @@ RUN \
     ln -sf /root/.composer/vendor/drush/drush/drush /usr/bin/drush
 
 #### Install drupal
-# RUN \
-#     wget -nv http://ftp.drupal.org/files/projects/drupal-8.0.0-beta3.tar.gz  && \
-#     tar xf drupal-8.0.0-beta3.tar.gz && \
-#     rm drupal-8.0.0-beta3.tar.gz && \
-#     mv drupal-8.0.0-beta3 /srv/drupal8 && \
-#     chown -R www-data:www-data /srv/drupal8 && \
-#     chmod -R a+w /srv/drupal8/sites/default
 RUN drush dl drupal-8.0.0-beta3 \
     --drupal-project-rename=drupal8 \
     --destination=/srv
@@ -84,12 +73,30 @@ RUN service mysql start && \
 RUN chown -R www-data:www-data /srv/drupal8 && \
     chmod -R a+w /srv/drupal8/sites/default
 
+
+### isntall ssh server
+RUN \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server && \
+    mkdir -p /var/run/sshd && \
+    chmod 0755 /var/run/sshd && \
+    echo 'root:screencast' | chpasswd && \
+    sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
+
 #### Define default command.
 CMD \
+    service ssh start && \
     service mysql start && \
     service php5-fpm start && \
     nginx
 
 #### Expose ports.
 EXPOSE 80
+EXPOSE 22
 # EXPOSE 3306
