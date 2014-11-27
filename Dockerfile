@@ -18,6 +18,10 @@ RUN \
     DEBIAN_FRONTEND=noninteractive apt-get install -y nginx
 RUN echo "\ndaemon off;" >> /etc/nginx/nginx.conf
 
+#### configure nginx for drupal
+RUN rm -f /etc/nginx/sites-enabled/*
+ADD sites-enabled/* /etc/nginx/sites-enabled/
+
 #### Install mariadb
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
 RUN \
@@ -39,15 +43,6 @@ RUN \
         php5-gd \
         php5-xdebug
 
-#### Install drupal
-RUN \
-    wget -nv http://ftp.drupal.org/files/projects/drupal-8.0.0-beta3.tar.gz  && \
-    tar xf drupal-8.0.0-beta3.tar.gz && \
-    rm drupal-8.0.0-beta3.tar.gz && \
-    mv drupal-8.0.0-beta3 /srv/drupal8 && \
-    chown -R www-data:www-data /srv/drupal8 && \
-    chmod -R a+w /srv/drupal8/sites/default
-
 
 #### Install and configure postfix for sending of emails
 RUN \
@@ -56,19 +51,50 @@ RUN \
     echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
     apt-get install -y postfix
 
-#### Install composer and drush
+#### drush
+# Install composer
 RUN \
     curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer && \
-    composer global require drush/drush:6.* && \
-    ln -sf /.composer/vendor/drush/drush/drush /usr/bin/drush
+    mv composer.phar /usr/local/bin/composer
+# and drush
+RUN \
+    composer global require drush/drush:dev-master && \
+    ln -sf /root/.composer/vendor/drush/drush/drush /usr/bin/drush
 
-# configure nginx for drupal
-RUN rm -f /etc/nginx/sites-enabled/*
-ADD sites-enabled/* /etc/nginx/sites-enabled/
+#### Install drupal
+# RUN \
+#     wget -nv http://ftp.drupal.org/files/projects/drupal-8.0.0-beta3.tar.gz  && \
+#     tar xf drupal-8.0.0-beta3.tar.gz && \
+#     rm drupal-8.0.0-beta3.tar.gz && \
+#     mv drupal-8.0.0-beta3 /srv/drupal8 && \
+#     chown -R www-data:www-data /srv/drupal8 && \
+#     chmod -R a+w /srv/drupal8/sites/default
+RUN drush dl drupal-8.0.0-beta3 \
+    --drupal-project-rename=drupal8 \
+    --destination=/srv
+WORKDIR /srv/drupal8
+RUN service mysql start && \
+    drush site-install standard \
+    -y \
+    --db-url='mysql://drupal8:drupal1212@localhost/drupal8' \
+    --site-name=drupal8 \
+    --account-name=admin \
+    --account-pass=drupal1212 && \
+    service mysql stop
+RUN chown -R www-data:www-data /srv/drupal8 && \
+    chmod -R a+w /srv/drupal8/sites/default
 
 #### Define mountable directories.
-VOLUME ["/etc/mysql", "/var/lib/mysql", "/var/log", "/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx"]
+# VOLUME [
+#     "/etc/mysql", 
+#     "/var/lib/mysql", 
+#     "/var/log", 
+#     "/etc/nginx/sites-enabled", 
+#     "/etc/nginx/certs", 
+#     "/etc/nginx/conf.d", 
+#     "/var/log/nginx",
+#     "/srv/drupal8/sites"
+#     ]
 
 #### Define default command.
 CMD \
