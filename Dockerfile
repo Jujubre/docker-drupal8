@@ -84,18 +84,6 @@ RUN service mysql start && \
 RUN chown -R www-data:www-data /srv/drupal8 && \
     chmod -R a+w /srv/drupal8/sites/default
 
-#### Define mountable directories.
-# VOLUME [
-#     "/etc/mysql", 
-#     "/var/lib/mysql", 
-#     "/var/log", 
-#     "/etc/nginx/sites-enabled", 
-#     "/etc/nginx/certs", 
-#     "/etc/nginx/conf.d", 
-#     "/var/log/nginx",
-#     "/srv/drupal8/sites"
-#     ]
-
 #### Define default command.
 CMD \
     service mysql start && \
@@ -104,5 +92,4 @@ CMD \
 
 #### Expose ports.
 EXPOSE 80
-EXPOSE 443
 EXPOSE 3306
