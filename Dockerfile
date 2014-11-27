@@ -92,4 +92,4 @@ CMD \
 
 #### Expose ports.
 EXPOSE 80
-EXPOSE 3306
+# EXPOSE 3306
