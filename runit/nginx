@@ -1,0 +1,3 @@
+#!/bin/sh
+# setuser if neede to runt he process as another user than root
+exec /usr/sbin/nginx >>/var/log/nginx.log 2>&1

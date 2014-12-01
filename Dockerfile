@@ -6,34 +6,30 @@
 #      MariaDB >= 5.1.44
 
 #################################
-#### Basic stuff
+#### phusion/baseimage
 # Format: FROM    repository[:version]
-FROM phusion/baseimage:9.9
+FROM phusion/baseimage:0.9.15
 
 # Format: MAINTAINER Name <email@addr.ess>
 MAINTAINER Jujubre <jujubre+docker@gmail.com>
+
+# Set correct environment variables.
+ENV HOME /root
+
+# Regenerate SSH host keys. baseimage-docker does not contain any, so you
+# have to do that yourself. You may also comment out this instruction; the
+# init system will auto-generate one during boot.
+RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
+RUN /usr/sbin/enable_insecure_key
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
+
 
 # update ubuntu
 RUN add-apt-repository -y ppa:nginx/stable && \
     apt-get update && \
     apt-get upgrade -y
-
-#################################
-### isntall ssh server
-RUN \
-    apt-get install -y openssh-server && \
-    mkdir -p /var/run/sshd && \
-    chmod 0755 /var/run/sshd && \
-    echo 'root:root1212' | chpasswd && \
-    sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    echo "UseDNS no" >> /etc/ssh/sshd_config
-
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
-
 
 #################################
 #### Install mariadb
@@ -51,7 +47,7 @@ RUN \
 #################################
 #### isntall nginx 
 RUN apt-get install -y nginx && \
-    echo "\ndaemon off;" >> /etc/nginx/nginx.conf
+    echo "\ndaemon off;" >> /etc/nginx/nginx.conf 
 
 # configure nginx
 RUN rm -f /etc/nginx/sites-enabled/*
@@ -96,11 +92,24 @@ RUN chown -R www-data:www-data /srv/drupal8 && \
 
 #################################
 #### Define default command.
-CMD \
-    service ssh start && \
-    service mysql start && \
-    service php5-fpm start && \
-    nginx
+# CMD \
+#     service ssh start && \
+#     service mysql start && \
+#     service php5-fpm start && \
+#     nginx
+
+#################################
+# add services for autostart
+RUN mkdir /etc/service/nginx
+ADD runit/nginx /etc/service/nginx/run
+RUN mkdir /etc/service/mysqld
+ADD runit/mysqld /etc/service/mysqld/run
+RUN mkdir /etc/service/php5-fpm
+ADD runit/php5-fpm /etc/service/php5-fpm/run
+
+#################################
+# Clean up APT when done.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #################################
 #### Expose ports.
