@@ -1,3 +1,0 @@
-#!/bin/sh
-# setuser if neede to runt he process as another user than root
-exec //usr/bin/mysqld_safe >> /var/log/mysqld.log 2>&1

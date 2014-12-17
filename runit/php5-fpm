@@ -1,3 +1,0 @@
-#!/bin/sh
-# setuser if neede to runt he process as another user than root
-exec /usr/sbin/php5-fpm --nodaemonize >> /var/log/php5-fpm.log 2>&1
