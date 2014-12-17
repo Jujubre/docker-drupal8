@@ -83,7 +83,6 @@ RUN apt-get clean -y
 #################################
 #### Define default command.
 CMD \
-    service ssh start && \
     service mysql start && \
     service php5-fpm start && \
     nginx
@@ -91,4 +90,3 @@ CMD \
 #################################
 #### Expose ports.
 EXPOSE 80
-EXPOSE 22
