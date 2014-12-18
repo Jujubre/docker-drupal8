@@ -12,10 +12,12 @@ Versions:
  - password = drupal1212
 
 Build:
+
     git clone ssh://git@132.204.211.203:10022/tdemalliard/docker-drupal8.git
     docker build --tag tdemalliard/dupal8 drupal8
 
 Run: 
+
     docker run -d -P --name drupal8 tdemalliard/dupal8
     # Get http port on your hosting machine assigned by docker
     docker port drupal8
