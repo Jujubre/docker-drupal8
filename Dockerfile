@@ -59,7 +59,7 @@ RUN \
 
 #################################
 #### Install drupal
-RUN drush dl drupal-8.0.0-beta4 \
+RUN drush dl drupal-8.0.0-beta6 \
     --drupal-project-rename=drupal8 \
     --destination=/srv
 WORKDIR /srv/drupal8
