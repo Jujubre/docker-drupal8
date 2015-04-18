@@ -1,4 +1,4 @@
-dockerized drupal 8 beta 7 working out of the box, testing purpose.
+dockerized drupal 8 beta 9 working out of the box, testing purpose.
 
 Versions:
  - dockerfile/ubuntu 14.04
