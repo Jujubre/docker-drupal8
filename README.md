@@ -13,8 +13,9 @@ Versions:
 
 Build:
 ```bash
-git clone ssh://git@132.204.211.203:10022/tdemalliard/docker-drupal8.git
-docker build --tag tdemalliard/dupal8 drupal8
+git clone [....]docker-drupal8.git
+cd docker-drupal8
+docker build --tag tdemalliard/dupal8 .
 ```
 
 Run: 
