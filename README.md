@@ -1,10 +1,10 @@
-dockerized drupal 8 beta 6 working out of the box, testing purpose.
+dockerized drupal 8 beta 7 working out of the box, testing purpose.
 
 Versions:
  - dockerfile/ubuntu 14.04
- - php 5.5.9
- - nginx 1.6.2
- - mariadb 5.5.40
+ - php latest
+ - nginx latest
+ - mariadb latest
  - drush 7 (drush:dev-master)
 
 **drupal login:**

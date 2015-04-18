@@ -13,11 +13,12 @@ MAINTAINER Jujubre <jujubre+docker@gmail.com>
 
 #################################
 #### isntall nginx + update all sources
+RUN echo 'Acquire::http { Proxy "http://172.17.42.1:3142"; };' >> /etc/apt/apt.conf.d/01proxy
 RUN apt-get install -qy software-properties-common
 RUN \
     add-apt-repository -y ppa:nginx/stable && \
     apt-get update && \
-    apt-get install -qy nginx=1.6.2-5+trusty0 && \
+    apt-get install -qy nginx && \
     echo "\ndaemon off;" >> /etc/nginx/nginx.conf
 
 #### configure nginx for drupal
@@ -26,7 +27,7 @@ ADD sites-enabled/* /etc/nginx/sites-enabled/
 
 #################################
 #### Install mariadb
-RUN apt-get install -qy mariadb-server=5.5.40-0ubuntu0.14.04.1
+RUN apt-get install -qy mariadb-server
 RUN \
     sed -i 's/^\(bind-address\s.*\)/# \1/' /etc/mysql/my.cnf && \
     echo "mysqld_safe --log-error=/var/log/mysql/error.log --skip-syslog &" > /tmp/config && \
@@ -40,10 +41,10 @@ RUN \
 #################################
 #### Install php5
 RUN apt-get install -qy \
-    php5-cli=5.5.9+dfsg-1ubuntu4.5 \
-    php5-fpm=5.5.9+dfsg-1ubuntu4.5 \
-    php5-mysql=5.5.9+dfsg-1ubuntu4.5 \
-    php5-gd=5.5.9+dfsg-1ubuntu4.5
+    php5-cli \
+    php5-fpm \
+    php5-mysql \
+    php5-gd
 
 #################################
 #### drush
@@ -59,7 +60,7 @@ RUN \
 
 #################################
 #### Install drupal
-RUN drush dl drupal-8.0.0-beta6 \
+RUN drush dl drupal-8.0.0-beta7 \
     --drupal-project-rename=drupal8 \
     --destination=/srv
 WORKDIR /srv/drupal8
